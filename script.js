@@ -1,5 +1,5 @@
 // File paths mapped by unit index and type
-const units = [
+var units = [
     {
         full: "Unit 1/Unit_1_10_and_5_Mark_Answers.md",
         quick: "Unit 1/Unit_1_Most_Likely.md"
@@ -22,97 +22,94 @@ const units = [
     }
 ];
 
-let currentUnit = 0;
-let currentType = "full";
+var rawNotesPath = "Technical_Writing_and_Communication_Skills_Notes.md";
+var currentUnit = 0;
+var currentType = "full";
 
-marked.setOptions({ breaks: true, gfm: true });
+document.addEventListener("DOMContentLoaded", function () {
+    var contentEl = document.getElementById("markdown-content");
+    var unitTabsContainer = document.getElementById("unit-tabs");
+    var typeTabsContainer = document.getElementById("type-tabs");
+    var themeToggle = document.getElementById("theme-toggle");
 
-document.addEventListener("DOMContentLoaded", () => {
-    const contentEl = document.getElementById("markdown-content");
-    const unitTabsContainer = document.getElementById("unit-tabs");
-    const typeTabsContainer = document.getElementById("type-tabs");
-    const themeToggle = document.getElementById("theme-toggle");
-
-    // --- Theme ---
-    const savedTheme = localStorage.getItem("theme") || "light";
+    // Theme
+    var savedTheme = localStorage.getItem("theme") || "light";
     document.documentElement.setAttribute("data-theme", savedTheme);
 
-    themeToggle.addEventListener("click", () => {
-        const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    themeToggle.addEventListener("click", function () {
+        var cur = document.documentElement.getAttribute("data-theme");
+        var next = cur === "dark" ? "light" : "dark";
         document.documentElement.setAttribute("data-theme", next);
         localStorage.setItem("theme", next);
     });
 
-    // --- Raw notes path ---
-    const rawNotesPath = "Technical_Writing_and_Communication_Skills_Notes.md";
+    // Unit tab clicks
+    var unitButtons = unitTabsContainer.querySelectorAll(".unit-tab");
+    unitButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            // update active state
+            unitButtons.forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
 
-    // --- Unit tab clicks ---
-    unitTabsContainer.addEventListener("click", (e) => {
-        const btn = e.target.closest(".unit-tab");
-        if (!btn) return;
-        setActiveTab(unitTabsContainer, btn);
-
-        if (btn.dataset.unit === "raw") {
-            currentUnit = "raw";
-            typeTabsContainer.style.display = "none";
-            loadFile(rawNotesPath);
-        } else {
-            currentUnit = parseInt(btn.dataset.unit);
-            typeTabsContainer.style.display = "";
-            loadCurrent();
-        }
+            if (btn.getAttribute("data-unit") === "raw") {
+                currentUnit = "raw";
+                typeTabsContainer.style.display = "none";
+                loadFile(rawNotesPath);
+            } else {
+                currentUnit = parseInt(btn.getAttribute("data-unit"));
+                typeTabsContainer.style.display = "";
+                loadFile(units[currentUnit][currentType]);
+            }
+        });
     });
 
-    // --- Type tab clicks ---
-    typeTabsContainer.addEventListener("click", (e) => {
-        const btn = e.target.closest(".type-tab");
-        if (!btn) return;
-        currentType = btn.dataset.type;
-        setActiveTab(typeTabsContainer, btn);
-        loadCurrent();
+    // Type tab clicks
+    var typeButtons = typeTabsContainer.querySelectorAll(".type-tab");
+    typeButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            typeButtons.forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+            currentType = btn.getAttribute("data-type");
+            if (currentUnit !== "raw") {
+                loadFile(units[currentUnit][currentType]);
+            }
+        });
     });
 
-    function setActiveTab(container, active) {
-        container.querySelectorAll("button").forEach(b => b.classList.remove("active"));
-        active.classList.add("active");
-    }
-
-    // --- Load markdown ---
-
-    async function loadCurrent() {
-        const path = units[currentUnit][currentType];
-        loadFile(path);
-    }
-
-    async function loadFile(path) {
+    // Load a markdown file by path
+    function loadFile(path) {
         contentEl.innerHTML = '<div class="loader-wrap"><div class="loader"></div></div>';
 
-        try {
-            const res = await fetch(encodeURI(path));
-            if (!res.ok) throw new Error("Could not load file (status " + res.status + ")");
-            const md = await res.text();
-            const html = marked.parse(md);
+        fetch(path)
+            .then(function (res) {
+                if (!res.ok) throw new Error("Could not load file (status " + res.status + ")");
+                return res.text();
+            })
+            .then(function (md) {
+                var html = marked.parse(md);
 
-            // Wrap tables for horizontal scroll
-            const wrapper = document.createElement("div");
-            wrapper.innerHTML = html;
-            wrapper.querySelectorAll("table").forEach(table => {
-                const div = document.createElement("div");
-                div.className = "table-wrapper";
-                table.parentNode.insertBefore(div, table);
-                div.appendChild(table);
+                // Wrap tables for horizontal scroll
+                var wrapper = document.createElement("div");
+                wrapper.innerHTML = html;
+                var tables = wrapper.querySelectorAll("table");
+                tables.forEach(function (table) {
+                    var div = document.createElement("div");
+                    div.className = "table-wrapper";
+                    table.parentNode.insertBefore(div, table);
+                    div.appendChild(table);
+                });
+
+                contentEl.innerHTML = "";
+                contentEl.appendChild(wrapper);
+                window.scrollTo(0, 0);
+            })
+            .catch(function (err) {
+                contentEl.innerHTML =
+                    '<p class="placeholder-text">Error: ' + err.message +
+                    '<br><br>If testing locally, use a local server (Live Server or python -m http.server).</p>';
             });
-
-            contentEl.innerHTML = "";
-            contentEl.appendChild(wrapper);
-            window.scrollTo({ top: 0, behavior: "instant" });
-        } catch (err) {
-            contentEl.innerHTML =
-                '<p class="placeholder-text">Error: ' + err.message +
-                '<br><br>If you are testing locally, please use a local server<br>(e.g. Live Server in VS Code or <code>python -m http.server</code>).</p>';
-        }
     }
 
-    // Load first page on start
-    loadCurrent();
+    // Load first page
+    loadFile(units[0]["full"]);
 });
