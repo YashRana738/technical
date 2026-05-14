@@ -67,8 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Load markdown ---
+    const rawNotesPath = "Technical_Writing_and_Communication_Skills_Notes.md";
+
     async function loadCurrent() {
-        const path = units[currentUnit][currentType];
+        const path = currentType === "raw" ? rawNotesPath : units[currentUnit][currentType];
         contentEl.innerHTML = '<div class="loader-wrap"><div class="loader"></div></div>';
 
         try {
