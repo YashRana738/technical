@@ -47,9 +47,17 @@ document.addEventListener("DOMContentLoaded", () => {
     unitTabsContainer.addEventListener("click", (e) => {
         const btn = e.target.closest(".unit-tab");
         if (!btn) return;
-        currentUnit = parseInt(btn.dataset.unit);
         setActiveTab(unitTabsContainer, btn);
-        loadCurrent();
+
+        if (btn.dataset.unit === "raw") {
+            currentUnit = "raw";
+            typeTabsContainer.style.display = "none";
+            loadFile(rawNotesPath);
+        } else {
+            currentUnit = parseInt(btn.dataset.unit);
+            typeTabsContainer.style.display = "";
+            loadCurrent();
+        }
     });
 
     // --- Type tab clicks ---
@@ -70,7 +78,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const rawNotesPath = "Technical_Writing_and_Communication_Skills_Notes.md";
 
     async function loadCurrent() {
-        const path = currentType === "raw" ? rawNotesPath : units[currentUnit][currentType];
+        const path = units[currentUnit][currentType];
+        loadFile(path);
+    }
+
+    async function loadFile(path) {
         contentEl.innerHTML = '<div class="loader-wrap"><div class="loader"></div></div>';
 
         try {
