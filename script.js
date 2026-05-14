@@ -43,6 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("theme", next);
     });
 
+    // --- Raw notes path ---
+    const rawNotesPath = "Technical_Writing_and_Communication_Skills_Notes.md";
+
     // --- Unit tab clicks ---
     unitTabsContainer.addEventListener("click", (e) => {
         const btn = e.target.closest(".unit-tab");
@@ -75,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Load markdown ---
-    const rawNotesPath = "Technical_Writing_and_Communication_Skills_Notes.md";
 
     async function loadCurrent() {
         const path = units[currentUnit][currentType];
