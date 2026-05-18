@@ -3,7 +3,7 @@
 A clean, responsive, and unit-wise study portal for Technical Writing and Communication Skills. This repository contains structured question-bank answers, quick revision notes, and raw study materials, all accessible through a web-based interface.
 
 ## 🚀 Live Site
-Check out the study portal here: [https://YashRana738.github.io/technical/](h[ttps://YashRana738.github.io/technical/](https://yashrana738.github.io/technical_writing/))
+Check out the study portal here: [https://yashrana738.github.io/technical_writing/]
 
 ## 📂 Repository Structure
 
